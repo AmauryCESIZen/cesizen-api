@@ -1,19 +1,48 @@
 import Joi from "joi";
 
-const userScheme = Joi.object({
-  name: Joi.string().min(3).required(),
-  email: Joi.string().email().required(),
-});
+const validateBody = (schema) => (req, res, next) => {
+  const { error, value } = schema.validate(req.body, {
+    abortEarly: true,
+    stripUnknown: true,
+  });
 
-const validateUser = (req, res, next) => {
-  const { error } = userScheme.validate(req.body);
   if (error) {
     return res.status(400).json({
       status: 400,
       message: error.details[0].message,
     });
   }
+
+  req.body = value;
   next();
 };
 
-export default validateUser;
+export const validateIdParam = (req, res, next) => {
+  const idSchema = Joi.number().integer().positive().required();
+  const { error, value } = idSchema.validate(req.params.id);
+
+  if (error) {
+    return res.status(400).json({ status: 400, message: "ID invalide." });
+  }
+
+  req.params.id = String(value);
+  next();
+};
+
+// Création de compte (front-office)
+export const createUserSchema = Joi.object({
+  email: Joi.string().email().max(255).required(),
+  password: Joi.string().min(8).max(72).required(),
+});
+
+// Mise à jour (admin/back-office ou futur profil)
+// On autorise email / password / role / statut (à protéger plus tard par auth admin)
+export const updateUserSchema = Joi.object({
+  email: Joi.string().email().max(255),
+  password: Joi.string().min(8).max(72),
+  role: Joi.string().valid("USER", "ADMIN"),
+  statut: Joi.string().valid("ACTIF", "DESACTIVE"),
+}).min(1);
+
+export const validateCreateUser = validateBody(createUserSchema);
+export const validateUpdateUser = validateBody(updateUserSchema);
