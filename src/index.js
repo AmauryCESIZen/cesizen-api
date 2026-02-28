@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import pool from "./config/db.js";
 
 import userRoutes from "./routes/userRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import errorHandling from "./middlewares/errorHandler.js";
 import { initDb } from "./data/initDb.js";
 
@@ -18,6 +19,7 @@ app.use(cors());
 
 //Routes
 app.use("/api", userRoutes);
+app.use("/api", authRoutes);
 
 //Error handling middleware
 app.use(errorHandling);

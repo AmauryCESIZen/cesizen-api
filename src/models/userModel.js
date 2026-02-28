@@ -1,6 +1,35 @@
 import pool from "../config/db.js";
 
 const USER_SELECT_FIELDS = "id, email, role, statut, created_at, updated_at";
+const USER_PUBLIC_FIELDS = "id, email, role, statut, created_at, updated_at";
+
+export const getUserByEmailService = async (email) => {
+  const result = await pool.query(
+    `SELECT id, email, password_hash, role, statut, created_at, updated_at
+     FROM users
+     WHERE email = $1`,
+    [email.toLowerCase()],
+  );
+  return result.rows[0];
+};
+
+export const createUserService = async (email, passwordHash) => {
+  const result = await pool.query(
+    `INSERT INTO users (email, password_hash, role, statut)
+     VALUES ($1, $2, 'USER', 'ACTIF')
+     RETURNING ${USER_PUBLIC_FIELDS}`,
+    [email.toLowerCase(), passwordHash],
+  );
+  return result.rows[0];
+};
+
+export const getUserPublicByIdService = async (id) => {
+  const result = await pool.query(
+    `SELECT ${USER_PUBLIC_FIELDS} FROM users WHERE id = $1`,
+    [id],
+  );
+  return result.rows[0];
+};
 
 export const getAllUsersService = async () => {
   const result = await pool.query(
@@ -13,16 +42,6 @@ export const getUserByIdService = async (id) => {
   const result = await pool.query(
     `SELECT ${USER_SELECT_FIELDS} FROM users WHERE id = $1`,
     [id],
-  );
-  return result.rows[0];
-};
-
-export const createUserService = async (email, passwordHash) => {
-  const result = await pool.query(
-    `INSERT INTO users (email, password_hash, role, statut)
-     VALUES ($1, $2, 'USER', 'ACTIF')
-     RETURNING ${USER_SELECT_FIELDS}`,
-    [email.toLowerCase(), passwordHash],
   );
   return result.rows[0];
 };

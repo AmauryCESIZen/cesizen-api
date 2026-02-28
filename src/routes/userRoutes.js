@@ -12,17 +12,37 @@ import {
   validateUpdateUser,
   validateIdParam,
 } from "../middlewares/inputValidator.js";
+import { requireAuth, requireAdmin } from "../middlewares/auth.js";
 
 const router = express.Router();
 
 // CRUD users
 router.post("/users", validateCreateUser, createUser);
-router.get("/users", getAllUsers);
+router.get("/users", requireAuth, requireAdmin, getAllUsers);
 router.get("/users/:id", validateIdParam, getUserById);
-router.put("/users/:id", validateIdParam, validateUpdateUser, updateUser);
-router.patch("/users/:id/disable", validateIdParam, disableUser);
+router.put(
+  "/users/:id",
+  requireAuth,
+  requireAdmin,
+  validateIdParam,
+  validateUpdateUser,
+  updateUser,
+);
+router.patch(
+  "/users/:id/disable",
+  requireAuth,
+  requireAdmin,
+  validateIdParam,
+  disableUser,
+);
 
 // hard delete
-router.delete("/users/:id", validateIdParam, deleteUser);
+router.delete(
+  "/users/:id",
+  requireAuth,
+  requireAdmin,
+  validateIdParam,
+  deleteUser,
+);
 
 export default router;
