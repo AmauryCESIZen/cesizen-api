@@ -29,14 +29,11 @@ export const validateIdParam = (req, res, next) => {
   next();
 };
 
-// Création de compte (front-office)
 export const createUserSchema = Joi.object({
   email: Joi.string().email().max(255).required(),
   password: Joi.string().min(8).max(72).required(),
 });
 
-// Mise à jour (admin/back-office ou futur profil)
-// On autorise email / password / role / statut (à protéger plus tard par auth admin)
 export const updateUserSchema = Joi.object({
   email: Joi.string().email().max(255),
   password: Joi.string().min(8).max(72),

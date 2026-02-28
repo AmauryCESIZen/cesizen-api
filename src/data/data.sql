@@ -122,8 +122,8 @@ EXECUTE FUNCTION set_updated_at();
 -- (tu peux générer avec un petit script Node ou un site bcrypt)
 INSERT INTO users (email, password_hash, role, statut)
 VALUES
-  ('admin@cesizen.local', '$2b$12$MDq5AJ24AotE1K0DUMEsz.obZ4KpsZ5bDQq6nUglTnmZutW7LMwhK', 'ADMIN', 'ACTIF'),
-  ('user@cesizen.local',  '$2b$12$0dRjb.43.fX7hr.LUm7VkuzNxTYOVSWCeinaNHPdTS7jtCyn.wiyS',  'USER',  'ACTIF')
+  ('admin@cesizen.fr', '$2b$12$MDq5AJ24AotE1K0DUMEsz.obZ4KpsZ5bDQq6nUglTnmZutW7LMwhK', 'ADMIN', 'ACTIF'),
+  ('user@cesizen.fr',  '$2b$12$0dRjb.43.fX7hr.LUm7VkuzNxTYOVSWCeinaNHPdTS7jtCyn.wiyS',  'USER',  'ACTIF')
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO categories (name)
