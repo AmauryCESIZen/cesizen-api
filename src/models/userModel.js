@@ -83,3 +83,14 @@ export const deleteUserService = async (id) => {
   );
   return result.rows[0];
 };
+
+export const updateUserPasswordService = async (userId, passwordHash) => {
+  const result = await pool.query(
+    `UPDATE users
+     SET password_hash = $1, updated_at = NOW()
+     WHERE id = $2
+     RETURNING id, email, role, statut, created_at, updated_at`,
+    [passwordHash, userId],
+  );
+  return result.rows[0];
+};

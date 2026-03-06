@@ -1,10 +1,19 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { randomBytes, createHash } from "node:crypto";
 import {
   createUserService,
   getUserByEmailService,
   getUserPublicByIdService,
+  updateUserPasswordService,
 } from "../models/userModel.js";
+
+import {
+  createResetTokenService,
+  findValidResetTokenByHashService,
+  invalidateOldTokensForUser,
+  markResetTokenUsedService,
+} from "../models/resetTokenModel.js";
 
 const handleResponse = (res, status, message, data = null) => {
   res.status(status).json({ status, message, data });
@@ -84,4 +93,72 @@ export const logout = async (req, res) => {
     status: 200,
     message: "Déconnecté (supprime le token côté client).",
   });
+};
+
+export const forgotPassword = async (req, res, next) => {
+  const { email } = req.body;
+
+  try {
+    const user = await getUserByEmailService(email);
+
+    const genericMsg =
+      "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.";
+
+    if (!user || user.statut !== "ACTIF") {
+      return handleResponse(res, 200, genericMsg);
+    }
+
+    await invalidateOldTokensForUser(user.id);
+
+    const token = randomBytes(32).toString("hex");
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+
+    const minutes = Number(process.env.RESET_TOKEN_EXPIRES_MINUTES || 60);
+    const expireAt = new Date(Date.now() + minutes * 60 * 1000);
+
+    await createResetTokenService({
+      userId: user.id,
+      tokenHash,
+      expireAt,
+    });
+
+    // TODO Envoi de mail (nodemailer)
+    console.log(`[RESET] token for ${email}: ${token}`);
+
+    if (process.env.NODE_ENV !== "production") {
+      return handleResponse(res, 200, genericMsg, { devToken: token });
+    }
+
+    return handleResponse(res, 200, genericMsg);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  const { token, password } = req.body;
+
+  try {
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+
+    const resetRow = await findValidResetTokenByHashService(tokenHash);
+    if (!resetRow) {
+      return handleResponse(res, 400, "Token invalide ou expiré.");
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    const updatedUser = await updateUserPasswordService(
+      resetRow.user_id,
+      passwordHash,
+    );
+
+    await markResetTokenUsedService(resetRow.id);
+
+    return handleResponse(res, 200, "Mot de passe mis à jour.", {
+      user: updatedUser,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
