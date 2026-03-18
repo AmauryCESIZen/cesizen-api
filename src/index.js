@@ -7,6 +7,7 @@ import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import contentRoutes from "./routes/contentRoutes.js";
+import presetRoutes from "./routes/presetRoutes.js";
 import errorHandling from "./middlewares/errorHandler.js";
 import { initDb } from "./data/initDb.js";
 
@@ -24,6 +25,7 @@ app.use("/api", userRoutes);
 app.use("/api", authRoutes);
 app.use("/api", categoryRoutes);
 app.use("/api", contentRoutes);
+app.use("/api", presetRoutes);
 
 //Error handling middleware
 app.use(errorHandling);
