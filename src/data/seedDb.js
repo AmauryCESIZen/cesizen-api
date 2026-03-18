@@ -3,13 +3,19 @@ import path from "path";
 import { fileURLToPath } from "url";
 import pool from "../config/db.js";
 
-export async function initDb() {
+async function seedDb() {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
 
-  const sqlPath = path.resolve(__dirname, "./schema.sql");
+  const sqlPath = path.resolve(__dirname, "./seed.sql");
   const sql = await fs.readFile(sqlPath, "utf8");
 
   await pool.query(sql);
-  console.log("✅ Schema ensured (schema.sql executed)");
+  console.log("✅ Seed done (seed.sql executed)");
+  process.exit(0);
 }
+
+seedDb().catch((e) => {
+  console.error("❌ Seed failed:", e);
+  process.exit(1);
+});
