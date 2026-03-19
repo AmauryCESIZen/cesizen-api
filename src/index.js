@@ -32,8 +32,15 @@ app.use(errorHandling);
 
 //Testing pg connection
 app.get("/", async (req, res) => {
-  const result = await pool.query("select current_database()");
-  res.send(`The database name is : ${result.rows[0].current_database}`);
+  const result = await pool.query(`
+    SELECT
+      current_database() AS db,
+      current_user AS user,
+      inet_server_addr() AS host,
+      inet_server_port() AS port
+  `);
+
+  res.json(result.rows[0]);
 });
 
 // Server running after DB initialization
