@@ -27,6 +27,7 @@ logs/
 .env
 .env.*
 !.env.example
+.dockerignore
 
 ############################
 # Docker / local volumes
@@ -62,3 +63,5 @@ temp/
 *.swp
 .DS_Store
 Thumbs.db
+
+backups/
