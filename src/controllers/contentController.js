@@ -42,7 +42,23 @@ export const getPublishedContentById = async (req, res, next) => {
 export const getAllContentsAdmin = async (_req, res, next) => {
   try {
     const rows = await getAllContentsAdminService();
-    handleResponse(res, 200, "Contents fetched successfully", rows);
+
+    const contentsWithCategories = await Promise.all(
+      rows.map(async (content) => {
+        const categories = await getCategoriesForContentService(content.id);
+        return {
+          ...content,
+          categories,
+        };
+      }),
+    );
+
+    handleResponse(
+      res,
+      200,
+      "Contents fetched successfully",
+      contentsWithCategories,
+    );
   } catch (err) {
     next(err);
   }
