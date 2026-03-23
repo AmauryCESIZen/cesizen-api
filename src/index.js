@@ -1,21 +1,57 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import pool from "./config/db.js";
+
+import userRoutes from "./routes/userRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
+import contentRoutes from "./routes/contentRoutes.js";
+import presetRoutes from "./routes/presetRoutes.js";
+import errorHandling from "./middlewares/errorHandler.js";
+import { initDb } from "./data/initDb.js";
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = Number(process.env.PORT || 3001);
 
 //Middlewares
 app.use(express.json());
 app.use(cors());
 
 //Routes
+app.use("/api", userRoutes);
+app.use("/api", authRoutes);
+app.use("/api", categoryRoutes);
+app.use("/api", contentRoutes);
+app.use("/api", presetRoutes);
 
 //Error handling middleware
+app.use(errorHandling);
 
-//Server running
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+//Testing pg connection
+app.get("/", async (req, res) => {
+  const result = await pool.query(`
+    SELECT
+      current_database() AS db,
+      current_user AS user,
+      inet_server_addr() AS host,
+      inet_server_port() AS port
+  `);
+
+  res.json(result.rows[0]);
 });
+
+// Server running after DB initialization
+(async () => {
+  try {
+    await initDb();
+    app.listen(port, () => {
+      console.log(`Server is running on http://localhost:${port}`);
+    });
+  } catch (err) {
+    console.error("Server not started because DB init failed:", err);
+    process.exit(1);
+  }
+})();
