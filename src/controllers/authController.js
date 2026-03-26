@@ -15,6 +15,8 @@ import {
   markResetTokenUsedService,
 } from "../models/resetTokenModel.js";
 
+import { sendResetPasswordEmail } from "../services/mailService.js";
+
 const handleResponse = (res, status, message, data = null) => {
   res.status(status).json({ status, message, data });
 };
@@ -36,7 +38,6 @@ export const register = async (req, res, next) => {
 
     return handleResponse(res, 201, "Compte créé", { user, token });
   } catch (err) {
-    // unique violation on email
     if (err?.code === "23505") {
       return handleResponse(res, 409, "Cet email est déjà utilisé.");
     }
@@ -122,12 +123,13 @@ export const forgotPassword = async (req, res, next) => {
       expireAt,
     });
 
-    // TODO Envoi de mail (nodemailer)
-    console.log(`[RESET] token for ${email}: ${token}`);
+    const baseUrl = process.env.RESET_PASSWORD_URL;
+    const resetLink = `${baseUrl}?token=${encodeURIComponent(token)}`;
 
-    if (process.env.NODE_ENV !== "production") {
-      return handleResponse(res, 200, genericMsg, { devToken: token });
-    }
+    await sendResetPasswordEmail({
+      to: user.email,
+      resetLink,
+    });
 
     return handleResponse(res, 200, genericMsg);
   } catch (err) {
