@@ -78,7 +78,7 @@ Au premier lancement, `schema.sql` crée automatiquement les tables via `initDb(
 Pour charger les données de test :
 
 ```bash
-npm run db:seed
+docker exec -it cesizen-api npm run db:seed
 ```
 
 Comptes de seed : `admin@cesizen.fr` (ADMIN) et `user@cesizen.fr` (USER).
