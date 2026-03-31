@@ -13,8 +13,8 @@ ON CONFLICT DO NOTHING;
 
 INSERT INTO contents (title, body, status, author_id)
 VALUES
-  ('Comprendre le stress', 'Contenu de démonstration...', 'PUBLIE', (SELECT id FROM users WHERE email='admin@cesizen.local')),
-  ('Améliorer son sommeil', 'Contenu de démonstration...', 'BROUILLON', (SELECT id FROM users WHERE email='admin@cesizen.local'));
+  ('Comprendre le stress', 'Contenu de démonstration...', 'PUBLIE', (SELECT id FROM users WHERE email='admin@cesizen.fr')),
+  ('Améliorer son sommeil', 'Contenu de démonstration...', 'BROUILLON', (SELECT id FROM users WHERE email='admin@cesizen.fr'));
 
 INSERT INTO contents_categories (content_id, category_id)
 SELECT c.id, cat.id

@@ -31,6 +31,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env
     container_name: cesizen-api
     restart: unless-stopped
     environment:
@@ -45,7 +47,7 @@ services:
       RESET_TOKEN_EXPIRES_MINUTES: ${RESET_TOKEN_EXPIRES_MINUTES}
       NODE_ENV: development
     ports:
-      - "3001:3001"
+      - "3546:3001"
     depends_on:
       database:
         condition: service_healthy
