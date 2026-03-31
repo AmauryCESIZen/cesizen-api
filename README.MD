@@ -1,46 +1,56 @@
-# README API — CESIZen
+# CESIZen API
+
+API REST du projet CESIZen — application de santé mentale et de gestion du stress.
 
 ## Stack
 
-- Node.js
-- Express
-- PostgreSQL
-- Docker
+- **Node.js 22** (image Docker `node:22-bookworm-slim`)
+- **Express 5**
+- **PostgreSQL 16** (conteneur Docker)
+- **Docker Compose** (API + BDD + Adminer)
+- **bcryptjs** — hachage des mots de passe (12 rounds)
+- **jsonwebtoken** — authentification JWT
+- **Joi** — validation des entrées
+- **Nodemailer** — envoi d'emails (Mailtrap en dev)
+- **pg** — driver PostgreSQL (requêtes SQL brutes, pas d'ORM)
 
-## Fonctionnalités gérées
+## Fonctionnalités
 
-- inscription
-- connexion / déconnexion
-- récupération du profil courant
-- mot de passe oublié
-- réinitialisation du mot de passe
-- gestion des contenus
-- gestion des comptes
-- récupération des presets de respiration
+- Inscription / connexion / déconnexion (JWT)
+- Récupération du profil courant (`/api/auth/me`)
+- Mot de passe oublié + réinitialisation (token hashé SHA-256, envoi email)
+- CRUD utilisateurs (admin)
+- Désactivation logique des comptes (statut ACTIF / DESACTIVE)
+- CRUD contenus d'information avec statut BROUILLON / PUBLIE
+- CRUD catégories + association N:N avec les contenus
+- CRUD presets de respiration (admin) + consultation publique des presets actifs
 
 ## Prérequis
 
-- Docker Desktop
-- Node.js LTS
+- Docker Desktop (avec Docker Compose)
+- Node.js 22 LTS
 - npm
 
 ## Installation
 
 ```bash
-cd api
-npm install
+git clone https://github.com/AmauryCESIZen/cesizen-api.git
+cd cesizen-api
+cp .env.example .env
 ```
 
-Créer un fichier `.env` :
+Remplir le fichier `.env` :
 
 ```env
-PORT=3546
-DB_HOST=db
-DB_PORT=5432
-DB_NAME=cesizen
 DB_USER=postgres
 DB_PASSWORD=postgres
+DB_NAME=cesizen
+DB_HOST=database
+DB_PORT=5432
+PORT=3001
 JWT_SECRET=change-me
+JWT_EXPIRES_IN=1h
+RESET_TOKEN_EXPIRES_MINUTES=60
 SMTP_HOST=sandbox.smtp.mailtrap.io
 SMTP_PORT=2525
 SMTP_USER=your-user
@@ -49,68 +59,121 @@ MAIL_FROM=no-reply@cesizen.local
 RESET_PASSWORD_URL=exp://IP_DU_PC:8081/--/reset-password
 ```
 
-## Lancement avec Docker
+## Lancement
 
 ```bash
 docker compose up --build
 ```
 
-## Structure conseillée
+Cela démarre 3 conteneurs :
 
-```txt
-src/
-  config/
-  controllers/
-  middlewares/
-  models/
-  routes/
-  services/
-  data/
-  app.js
-  server.js
+| Service | Port | Description |
+|---------|------|-------------|
+| `cesizen-api` | `3546` | API Express |
+| `cesizen-db` | `5432` | PostgreSQL 16 |
+| `cesizen-adminer` | `8080` | Interface Adminer |
+
+Au premier lancement, `schema.sql` crée automatiquement les tables via `initDb()`.
+
+Pour charger les données de test :
+
+```bash
+npm run db:seed
 ```
 
-## Endpoints principaux attendus
+Comptes de seed : `admin@cesizen.fr` (ADMIN) et `user@cesizen.fr` (USER).
+
+## Tests
+
+```bash
+npm install --save-dev jest @jest/globals
+npm test
+```
+
+16 tests unitaires (Jest) couvrant la validation Joi, le hachage bcrypt et la génération JWT.
+
+```bash
+npm test -- --coverage
+```
+
+## Structure du projet
+
+```
+src/
+├── config/          # Connexion PostgreSQL (pg Pool)
+├── controllers/     # Logique métier (auth, user, content, category, preset)
+├── data/            # schema.sql, seed.sql, initDb.js, seedDb.js
+├── middlewares/      # auth (JWT), validators (Joi), errorHandler
+├── models/          # Requêtes SQL (services par entité)
+├── routes/          # Définition des endpoints Express
+├── services/        # Envoi d'emails (Nodemailer)
+└── index.js         # Point d'entrée
+```
+
+## Endpoints
 
 ### Auth
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-- `POST /api/auth/forgot-password`
-- `POST /api/auth/reset-password`
+| Méthode | Route | Auth | Description |
+|---------|-------|------|-------------|
+| POST | `/api/auth/register` | — | Inscription |
+| POST | `/api/auth/login` | — | Connexion |
+| GET | `/api/auth/me` | JWT | Profil courant |
+| POST | `/api/auth/logout` | JWT | Déconnexion |
+| POST | `/api/auth/forgot-password` | — | Demande de reset |
+| POST | `/api/auth/reset-password` | — | Réinitialisation MDP |
+
+### Utilisateurs
+
+| Méthode | Route | Auth | Description |
+|---------|-------|------|-------------|
+| POST | `/api/users` | — | Créer un utilisateur |
+| GET | `/api/users` | Admin | Lister tous les utilisateurs |
+| GET | `/api/users/:id` | — | Détail d'un utilisateur |
+| PUT | `/api/users/:id` | Admin | Modifier un utilisateur |
+| PATCH | `/api/users/:id/disable` | Admin | Désactiver un compte |
+| DELETE | `/api/users/:id` | Admin | Supprimer un compte |
 
 ### Contenus
 
-- `GET /api/contents/public`
-- `GET /api/contents/public/:id`
-- `POST /api/admin/contents`
-- `PUT /api/admin/contents/:id`
-- `PATCH /api/admin/contents/:id/status`
+| Méthode | Route | Auth | Description |
+|---------|-------|------|-------------|
+| GET | `/api/contents` | — | Contenus publiés (public) |
+| GET | `/api/contents/:id` | — | Détail d'un contenu publié |
+| GET | `/api/admin/contents` | Admin | Tous les contenus |
+| GET | `/api/admin/contents/:id` | Admin | Détail (admin) |
+| POST | `/api/admin/contents` | Admin | Créer un contenu |
+| PUT | `/api/admin/contents/:id` | Admin | Modifier un contenu |
+| DELETE | `/api/admin/contents/:id` | Admin | Supprimer un contenu |
 
-### Comptes admin
+### Catégories
 
-- `GET /api/admin/users`
-- `POST /api/admin/users`
-- `PATCH /api/admin/users/:id/status`
-- `DELETE /api/admin/users/:id`
+| Méthode | Route | Auth | Description |
+|---------|-------|------|-------------|
+| GET | `/api/categories` | — | Lister les catégories |
+| GET | `/api/categories/:id` | — | Détail d'une catégorie |
+| POST | `/api/admin/categories` | Admin | Créer une catégorie |
+| PUT | `/api/admin/categories/:id` | Admin | Modifier une catégorie |
+| DELETE | `/api/admin/categories/:id` | Admin | Supprimer une catégorie |
 
-### Respiration
+### Presets de respiration
 
-- `GET /api/breathing/presets`
+| Méthode | Route | Auth | Description |
+|---------|-------|------|-------------|
+| GET | `/api/presets` | — | Presets actifs (public) |
+| GET | `/api/presets/:id` | — | Détail d'un preset actif |
+| GET | `/api/admin/presets` | Admin | Tous les presets |
+| GET | `/api/admin/presets/:id` | Admin | Détail (admin) |
+| POST | `/api/admin/presets` | Admin | Créer un preset |
+| PUT | `/api/admin/presets/:id` | Admin | Modifier un preset |
+| DELETE | `/api/admin/presets/:id` | Admin | Supprimer un preset |
 
-## Bonnes pratiques retenues
+## Sécurité
 
-- mot de passe stocké hashé
-- token de reset hashé en base
-- invalidation des anciens tokens de reset
-- séparation claire routes / contrôleurs / services
-- middleware d’authentification et middleware admin
-- variables sensibles via `.env`
-
-## Vérifications rapides
-
-- l’API répond sur le port exposé
-- la base PostgreSQL est joignable
-- la route `forgot-password` envoie bien un email Mailtrap
-- les routes admin refusent les comptes non administrateurs
+- Mots de passe hashés avec bcryptjs (12 rounds)
+- Tokens de réinitialisation hashés en SHA-256 (le token brut n'est jamais stocké)
+- Invalidation des anciens tokens avant chaque nouvelle demande de reset
+- Authentification par JWT (Bearer token)
+- Middleware `requireAdmin` pour les routes d'administration
+- Validation des entrées avec Joi sur chaque route
+- Variables sensibles dans `.env` (jamais versionnées)
