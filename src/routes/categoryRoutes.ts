@@ -15,11 +15,9 @@ import {
 
 const router = express.Router();
 
-// Public
 router.get("/categories", getAllCategories);
 router.get("/categories/:id", validateIdParam, getCategoryById);
 
-// Admin
 router.post(
   "/admin/categories",
   requireAuth,

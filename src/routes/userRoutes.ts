@@ -16,7 +16,6 @@ import { requireAuth, requireAdmin } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// CRUD users
 router.post("/users", validateCreateUser, createUser);
 router.get("/users", requireAuth, requireAdmin, getAllUsers);
 router.get("/users/:id", validateIdParam, getUserById);
@@ -35,8 +34,6 @@ router.patch(
   validateIdParam,
   disableUser,
 );
-
-// hard delete
 router.delete(
   "/users/:id",
   requireAuth,

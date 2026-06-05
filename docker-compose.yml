@@ -37,14 +37,16 @@ services:
     restart: unless-stopped
     environment:
       PORT: 3001
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_HOST: database
-      DB_PORT: 5432
+      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}?schema=public"
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
       RESET_TOKEN_EXPIRES_MINUTES: ${RESET_TOKEN_EXPIRES_MINUTES}
+      RESET_PASSWORD_URL: ${RESET_PASSWORD_URL}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      MAIL_FROM: ${MAIL_FROM}
       NODE_ENV: development
     ports:
       - "3546:3001"

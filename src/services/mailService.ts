@@ -10,7 +10,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendResetPasswordEmail = async ({ to, resetLink }) => {
+interface SendResetEmailInput {
+  to: string;
+  resetLink: string;
+}
+
+export const sendResetPasswordEmail = async ({
+  to,
+  resetLink,
+}: SendResetEmailInput): Promise<void> => {
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to,

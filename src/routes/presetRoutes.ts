@@ -8,7 +8,6 @@ import {
   getPresetByIdAdmin,
   updatePreset,
 } from "../controllers/presetController.js";
-
 import { validateIdParam } from "../middlewares/inputValidator.js";
 import { requireAuth, requireAdmin } from "../middlewares/auth.js";
 import {
@@ -18,11 +17,9 @@ import {
 
 const router = express.Router();
 
-// Public
 router.get("/presets", getActivePresets);
 router.get("/presets/:id", validateIdParam, getActivePresetById);
 
-// Admin
 router.get("/admin/presets", requireAuth, requireAdmin, getAllPresetsAdmin);
 router.get(
   "/admin/presets/:id",
@@ -31,7 +28,6 @@ router.get(
   validateIdParam,
   getPresetByIdAdmin,
 );
-
 router.post(
   "/admin/presets",
   requireAuth,

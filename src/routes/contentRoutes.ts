@@ -8,7 +8,6 @@ import {
   getPublishedContents,
   updateContent,
 } from "../controllers/contentController.js";
-
 import { validateIdParam } from "../middlewares/inputValidator.js";
 import { requireAuth, requireAdmin } from "../middlewares/auth.js";
 import {
@@ -18,11 +17,9 @@ import {
 
 const router = express.Router();
 
-// Public
 router.get("/contents", getPublishedContents);
 router.get("/contents/:id", validateIdParam, getPublishedContentById);
 
-// Admin
 router.get("/admin/contents", requireAuth, requireAdmin, getAllContentsAdmin);
 router.get(
   "/admin/contents/:id",
@@ -31,7 +28,6 @@ router.get(
   validateIdParam,
   getContentByIdAdmin,
 );
-
 router.post(
   "/admin/contents",
   requireAuth,
