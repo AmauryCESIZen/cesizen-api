@@ -1,28 +1,37 @@
 import Joi from "joi";
+import type { Request, Response, NextFunction, RequestHandler } from "express";
 
-const validateBody = (schema) => (req, res, next) => {
-  const { error, value } = schema.validate(req.body, {
-    abortEarly: true,
-    stripUnknown: true,
-  });
-
-  if (error) {
-    return res.status(400).json({
-      status: 400,
-      message: error.details[0].message,
+export const validateBody =
+  (schema: Joi.Schema): RequestHandler =>
+  (req: Request, res: Response, next: NextFunction): void => {
+    const { error, value } = schema.validate(req.body, {
+      abortEarly: true,
+      stripUnknown: true,
     });
-  }
 
-  req.body = value;
-  next();
-};
+    if (error) {
+      res.status(400).json({
+        status: 400,
+        message: error.details[0].message,
+      });
+      return;
+    }
 
-export const validateIdParam = (req, res, next) => {
+    req.body = value;
+    next();
+  };
+
+export const validateIdParam = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void => {
   const idSchema = Joi.number().integer().positive().required();
   const { error, value } = idSchema.validate(req.params.id);
 
   if (error) {
-    return res.status(400).json({ status: 400, message: "ID invalide." });
+    res.status(400).json({ status: 400, message: "ID invalide." });
+    return;
   }
 
   req.params.id = String(value);
