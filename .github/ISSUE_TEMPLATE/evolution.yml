@@ -1,0 +1,58 @@
+name: "Demande d'évolution"
+description: "Proposer une nouvelle fonctionnalité ou une amélioration"
+title: "[ÉVOLUTION] "
+labels: ["évolution"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de décrire l'évolution souhaitée. Elle fera l'objet d'une analyse
+        (faisabilité, délai, coût) avant planification.
+
+  - type: textarea
+    id: besoin
+    attributes:
+      label: Besoin / problème à résoudre
+      description: Quel besoin métier ou utilisateur justifie cette évolution ?
+      placeholder: "Les administrateurs souhaitent pouvoir exporter la liste des utilisateurs..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution proposée
+      description: Décrivez la fonctionnalité ou l'amélioration envisagée.
+    validations:
+      required: true
+
+  - type: textarea
+    id: critères
+    attributes:
+      label: Critères d'acceptation
+      description: Comment saura-t-on que l'évolution est correctement réalisée ?
+      placeholder: |
+        - Un bouton "Exporter" est présent sur la page utilisateurs
+        - Le fichier généré est au format CSV
+        - Seuls les administrateurs y ont accès
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priorité
+    attributes:
+      label: Priorité souhaitée
+      options:
+        - "Haute"
+        - "Moyenne"
+        - "Basse"
+    validations:
+      required: true
+
+  - type: input
+    id: component
+    attributes:
+      label: Composant concerné
+      placeholder: "API / Back-office web / Application mobile"
+    validations:
+      required: false

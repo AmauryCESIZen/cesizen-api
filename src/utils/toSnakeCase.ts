@@ -1,9 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-// toSnakeCase
-// Convertit la sortie Prisma (camelCase) → snake_case pour
-// conserver le contrat API existant (mobile + web).
-// ─────────────────────────────────────────────────────────────
-
 const camelToSnake = (str: string): string =>
   str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 
