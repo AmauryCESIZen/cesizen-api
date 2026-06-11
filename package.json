@@ -1,38 +1,45 @@
 {
   "name": "cesizen-api",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "nodemon src/index.js",
-    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --forceExit",
-    "db:seed": "node src/data/seedDb.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AmauryCESIZen/cesizen-api.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "version": "2.0.0",
+  "description": "API CESIZen avec Prisma + TypeScript",
+  "main": "dist/index.js",
   "type": "module",
-  "bugs": {
-    "url": "https://github.com/AmauryCESIZen/cesizen-api/issues"
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --forceExit",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "prisma studio",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts"
   },
-  "homepage": "https://github.com/AmauryCESIZen/cesizen-api#readme",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
-    "nodemailer": "^8.0.4",
-    "pg": "^8.18.0"
+    "nodemailer": "^8.0.4"
   },
   "devDependencies": {
     "@jest/globals": "^30.3.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.10.0",
+    "@types/nodemailer": "^6.4.16",
     "jest": "^30.3.0",
-    "nodemon": "^3.1.14"
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
   }
 }
