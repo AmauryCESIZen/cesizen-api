@@ -14,11 +14,12 @@ import {
   validateResetPassword,
 } from "../middlewares/authValidator.js";
 import { requireAuth } from "../middlewares/auth.js";
+import { loginLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
 
 router.post("/auth/register", validateRegister, register);
-router.post("/auth/login", validateLogin, login);
+router.post("/auth/login", loginLimiter, validateLogin, login);
 router.get("/auth/me", requireAuth, me);
 router.post("/auth/logout", requireAuth, logout);
 router.post("/auth/forgot-password", validateForgotPassword, forgotPassword);

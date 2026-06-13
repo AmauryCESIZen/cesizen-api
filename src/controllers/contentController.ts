@@ -57,7 +57,6 @@ export const getAllContentsAdmin = async (_req: Request, res: Response, next: Ne
   try {
     const rows = await getAllContentsAdminService();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const contentsWithCategories = await Promise.all(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       rows.map(async (content: any) => {

@@ -1,5 +1,7 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import prisma from "./config/prisma.js";
 
@@ -15,9 +17,37 @@ dotenv.config();
 const app = express();
 const port = Number(process.env.PORT ?? 3001);
 
-// ─── Middlewares ──────────────────────────────────────────────
+// L'application tourne derrière le reverse proxy Traefik 
+app.set("trust proxy", 1);
+
+// ─── Sécurité : en-têtes HTTP ─────────────────────────────────
+// helmet positionne une série d'en-têtes de sécurité 
+app.use(helmet());
+
+// ─── Sécurité : restriction des origines (CORS) ───────────────
+// Seules les origines explicitement autorisées peuvent appeler l'API.
+const allowedOrigins = (process.env.CORS_ORIGIN ?? "http://localhost:5173")
+  .split(",")
+  .map((o) => o.trim());
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
+
+// ─── Sécurité : limitation du débit ────
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300, // 300 requêtes / IP / fenêtre
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Trop de requêtes, veuillez réessayer plus tard." },
+});
+app.use(globalLimiter);
+
 app.use(express.json());
-app.use(cors());
 
 // ─── Routes ───────────────────────────────────────────────────
 app.use("/api", userRoutes);
