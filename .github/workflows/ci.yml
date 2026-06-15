@@ -1,6 +1,6 @@
 name: CI
 
-# Déclenchement : à chaque push et chaque Pull Request sur main et develop
+# Déclenchement : push et Pull Request sur main et develop
 on:
   push:
     branches: [main, develop]
@@ -8,13 +8,34 @@ on:
     branches: [main, develop]
 
 jobs:
-  # ── Job 1 : compilation + tests ──────────────────────────────
+  # ── ESLint ────────────────
+  lint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Installation des dépendances
+        run: npm ci
+
+      - name: Génération du client Prisma
+        run: npx prisma generate
+
+      - name: Analyse ESLint
+        run: npm run lint
+
+  # ── compilation + tests ──────────────────────────────
   test:
     name: Tests et compilation
     runs-on: ubuntu-latest
 
-    # Variables d'environnement factices : les tests utilisent des mocks,
-    # mais Prisma a besoin que DATABASE_URL existe au chargement.
     env:
       DATABASE_URL: "postgresql://user:pass@localhost:5432/cesizen?schema=public"
       JWT_SECRET: "ci-test-secret"
@@ -42,7 +63,7 @@ jobs:
       - name: Exécution des tests
         run: npm test
 
-  # ── Job 2 : audit de sécurité des dépendances ────────────────
+  # ── audit de sécurité des dépendances ────────────────
   audit:
     name: Audit de sécurité des dépendances
     runs-on: ubuntu-latest

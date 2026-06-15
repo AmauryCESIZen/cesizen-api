@@ -1,12 +1,14 @@
 name: Deploy API
 
-# Déclenchement : à chaque push sur develop (déploiement en recette)
+# Déclenchement : à la publication d'un tag de version (ex. v1.0.0, v1.2.3)
+# La mise en production est donc un acte volontaire et versionné.
 on:
   push:
-    branches: [develop]
+    tags:
+      - "v*"
 
 jobs:
-  # ── 1. Tests (réutilise la même logique que la CI) ───────────
+  # ── 1. Tests (on ne déploie jamais une version non testée) ───
   test:
     name: Tests et compilation
     runs-on: ubuntu-latest
@@ -25,7 +27,7 @@ jobs:
       - run: npm run build
       - run: npm test
 
-  # ── 2. Construction et publication de l'image sur ghcr.io ────
+  # ── 2. Construction et publication de l'image (taguée) ───────
   build-and-push:
     name: Build et push de l'image Docker
     runs-on: ubuntu-latest
@@ -43,16 +45,29 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Génère automatiquement les tags d'image à partir du tag Git :
+      # v1.2.3 → image:1.2.3, image:1.2, image:latest
+      - name: Préparation des tags d'image
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/amaurycesizen/cesizen-api
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+
       - name: Build et push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/amaurycesizen/cesizen-api:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   # ── 3. Déploiement sur la VM via SSH ─────────────────────────
   deploy:
-    name: Déploiement sur la VM
+    name: Déploiement sur la VM (production)
     runs-on: ubuntu-latest
     needs: build-and-push
     steps:
