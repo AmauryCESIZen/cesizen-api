@@ -33,4 +33,4 @@ EXPOSE 3001
 # 1. db push : crée/met à jour les tables sans migration formelle
 # 2. db seed : insère les comptes admin/user, catégories, contenus, presets (|| true si déjà fait)
 # 3. lance l'app compilée
-CMD ["sh", "-c", "npx prisma db push --skip-generate --accept-data-loss && (npx prisma db seed || true) && node dist/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && (npx prisma db seed || true) && node dist/index.js"]
